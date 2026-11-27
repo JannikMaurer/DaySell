@@ -8,7 +8,11 @@ frühere Monate ansehen. Alle Daten bleiben auf deinem Handy.
 Die App läuft als Web-App in Safari: eigenes Symbol, Vollbild, funktioniert auch
 ohne Internet. Kein PC und kein Apple-Entwicklerkonto nötig.
 
-**Einmalig veröffentlichen (am PC oder Handy, ca. 5 Minuten):**
+**Adresse der App:** https://jannikmaurer.github.io/DaySell/
+GitHub veröffentlicht jede Änderung am Code automatisch dort
+(`.github/workflows/pages.yml`).
+
+**Alternativ auf Netlify (falls das Repository privat bleiben soll):**
 1. Auf https://app.netlify.com kostenlos registrieren, am einfachsten mit „Sign up with GitHub“.
 2. **Add new project → Import an existing project → GitHub** wählen und Netlify den
    Zugriff auf das Repository `DaySell` erlauben.
@@ -93,6 +97,8 @@ eigenständige App mit eigenem Symbol:
 | `src/backup.ts`, `src/backup.web.ts` | Sicherung als Datei speichern und einlesen (App bzw. Browser) |
 | `public/` | Web-App: Symbol, Manifest, Offline-Speicher (`sw.js`) |
 | `netlify.toml` | Einstellungen für die Veröffentlichung auf Netlify |
+| `.github/workflows/pages.yml` | Veröffentlichung auf GitHub Pages |
+| `app.config.js` | Unterordner für die Web-Version (`EXPO_BASE_URL`) |
 
 Hell und dunkel folgen automatisch der Einstellung des Handys.
 Auf dem iPhone sind die Flächen weichgezeichnetes Glas, auf Android etwas dichter

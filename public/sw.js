@@ -2,9 +2,11 @@
 // Seite: erst aus dem Netz (für Updates), sonst aus dem Speicher.
 // Dateien mit Prüfsumme im Namen (_expo/static): aus dem Speicher.
 const CACHE = 'ausgaben-v1';
+// Ordner, in dem die App liegt: „/“ bei Netlify, „/DaySell/“ bei GitHub Pages.
+const ROOT = new URL('./', self.location).pathname;
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['/', '/manifest.webmanifest', '/apple-touch-icon.png'])));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll([ROOT, ROOT + 'manifest.webmanifest', ROOT + 'apple-touch-icon.png'])));
   self.skipWaiting();
 });
 
@@ -23,8 +25,8 @@ self.addEventListener('fetch', (e) => {
   if (req.mode === 'navigate') {
     e.respondWith(
       fetch(req)
-        .then((res) => { const copy = res.clone(); caches.open(CACHE).then((c) => c.put('/', copy)); return res; })
-        .catch(() => caches.match('/')),
+        .then((res) => { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(ROOT, copy)); return res; })
+        .catch(() => caches.match(ROOT)),
     );
     return;
   }
