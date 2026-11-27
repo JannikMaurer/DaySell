@@ -192,3 +192,12 @@ export function backupDue(last: string | null, now = new Date()): boolean {
   const t = new Date(last).getTime();
   return isNaN(t) || now.getTime() - t > 30 * 864e5;
 }
+
+/** Begrüßung nach Tageszeit. */
+export function greeting(now = new Date()): string {
+  const h = now.getHours();
+  if (h >= 5 && h < 11) return 'Guten Morgen';
+  if (h >= 11 && h < 18) return 'Guten Tag';
+  if (h >= 18 && h < 23) return 'Guten Abend';
+  return 'Gute Nacht';
+}

@@ -12,7 +12,7 @@ import {
 import { confirm, exportFile, pickFile } from './src/backup';
 import { useTheme } from './src/theme';
 import { Backdrop } from './src/ui';
-import { EntryScreen, ListScreen, Notice, Overview, SavedScreen, SetupScreen } from './src/screens';
+import { EntryScreen, ListScreen, Notice, Overview, SavedScreen, SetupScreen, Welcome } from './src/screens';
 
 type ViewName = 'overview' | 'list' | 'entry' | 'saved' | 'setup';
 
@@ -39,6 +39,8 @@ function Main() {
   const [last, setLast] = useState<Entry | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [, setTick] = useState(0);
+  const [welcome, setWelcome] = useState(true);
+  const hiddenAt = useRef<number | null>(null);
   const loading = useRef(new Set<string>());
   const [lastBackup, setLastBackup] = useState<string | null>(null);
   const [allKeys, setAllKeys] = useState<string[] | null>(null);
@@ -73,7 +75,15 @@ function Main() {
 
   // Beim Zurückkehren in die App neu zeichnen, damit „heute“ stimmt.
   useEffect(() => {
-    const sub = AppState.addEventListener('change', (st) => st === 'active' && setTick((x) => x + 1));
+    // Nach mehr als 5 Minuten im Hintergrund wieder begrüßen: Das iPhone startet die App
+    // dann oft nicht neu, sondern holt sie nur nach vorn.
+    const sub = AppState.addEventListener('change', (st) => {
+      if (st === 'active') {
+        setTick((x) => x + 1);
+        if (hiddenAt.current && Date.now() - hiddenAt.current > 5 * 60_000) setWelcome(true);
+        hiddenAt.current = null;
+      } else if (hiddenAt.current == null) hiddenAt.current = Date.now();
+    });
     return () => sub.remove();
   }, []);
 
@@ -243,6 +253,14 @@ function Main() {
       <StatusBar style={t.dark ? 'light' : 'dark'} />
       <Backdrop />
       {screen}
+      {welcome ? (
+        <Welcome
+          settings={settings}
+          list={months[mkey(now.getFullYear(), now.getMonth())]}
+          firstRun={firstRun}
+          onDone={() => setWelcome(false)}
+        />
+      ) : null}
     </View>
   );
 }

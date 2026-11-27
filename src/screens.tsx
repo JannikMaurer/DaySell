@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Easing, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  MONTHS, backupDue, calc, fmtDate, dayLabel, envName, euro, iso, longDay, parseIso, pushDigits, sorted, totals, uid,
+  MONTHS, backupDue, calc, fmtDate, greeting, dayLabel, envName, euro, iso, longDay, parseIso, pushDigits, sorted, totals, uid,
   type Entry, type Row, type Settings,
 } from './logic';
 import { useTheme, type as T, type Theme } from './theme';
@@ -32,6 +32,53 @@ export function Notice({ text, onClose }: { text: string; onClose: () => void })
       <Text style={[T.small, { color: t.red, fontWeight: '600', flex: 1 }]}>{text}</Text>
       <DeleteButton label="Hinweis schließen" onPress={onClose} />
     </View>
+  );
+}
+
+/* ---------------- Begrüßung ---------------- */
+/** Kurze Begrüßung beim Öffnen: Symbol, Tageszeit, Tagesbudget. Blendet sich selbst aus, Tippen überspringt. */
+export function Welcome(p: { settings: Settings; list: Entry[] | undefined; firstRun: boolean; onDone: () => void }) {
+  const { t, ink, muted, red } = useStyles();
+  const fade = useRef(new Animated.Value(0)).current;
+  const lift = useRef(new Animated.Value(0)).current;
+  const done = useRef(false);
+  const native = Platform.OS !== 'web';
+
+  const close = () => {
+    if (done.current) return;
+    done.current = true;
+    Animated.timing(fade, { toValue: 0, duration: 380, easing: Easing.in(Easing.quad), useNativeDriver: native }).start(() => p.onDone());
+  };
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fade, { toValue: 1, duration: 320, easing: Easing.out(Easing.quad), useNativeDriver: native }),
+      Animated.timing(lift, { toValue: 1, duration: 520, easing: Easing.out(Easing.back(1.6)), useNativeDriver: native }),
+    ]).start();
+    const id = setTimeout(close, 1700);
+    return () => clearTimeout(id);
+  }, []);
+
+  const now = new Date();
+  let sub: string, over = false;
+  const c = p.list ? calc(p.settings, p.list, now.getFullYear(), now.getMonth(), now) : null;
+  if (p.firstRun) sub = 'Schön, dass du da bist. Richten wir kurz dein Budget ein.';
+  else if (c && c.budget) {
+    if (c.todayLeft >= 0) sub = `Heute kannst du noch ${euro(c.todayLeft)} ausgeben.`;
+    else { sub = `Heute bist du ${euro(-c.todayLeft)} über dem Tagesbudget.`; over = true; }
+  } else sub = longDay(iso(now));
+
+  return (
+    <Animated.View style={[StyleSheet.absoluteFill, { opacity: fade, zIndex: 10 }]}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Begrüßung überspringen" onPress={close} style={[StyleSheet.absoluteFill, s.welcome, { backgroundColor: t.bg }]}>
+        <Animated.View style={{ alignItems: 'center', transform: [{ scale: lift.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] }) }] }}>
+          <Image source={require('../assets/icon.png')} style={s.welcomeIcon} accessibilityIgnoresInvertColors />
+          <Text accessibilityRole="header" style={[T.h1, ink, { marginTop: 22, textAlign: 'center' }]}>
+            {p.firstRun ? 'Willkommen!' : greeting(now) + '!'}
+          </Text>
+          <Text style={[T.body, over ? [red, { fontWeight: '600' }] : muted, { marginTop: 8, textAlign: 'center', fontSize: 17, lineHeight: 23 }]}>{sub}</Text>
+        </Animated.View>
+      </Pressable>
+    </Animated.View>
   );
 }
 
@@ -469,6 +516,8 @@ export function SetupScreen(p: {
 }
 
 const s = StyleSheet.create({
+  welcome: { alignItems: 'center', justifyContent: 'center', padding: 32 },
+  welcomeIcon: { width: 96, height: 96, borderRadius: 22 },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   wrapRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'baseline', columnGap: 10, rowGap: 2 },
   icon: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
