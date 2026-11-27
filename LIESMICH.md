@@ -3,28 +3,31 @@
 Eine echte App (React Native mit Expo): Tagesbudget, Umschläge, Ausgaben erfassen,
 frühere Monate ansehen. Alle Daten bleiben auf deinem Handy.
 
-## 1. Einmalig vorbereiten (Windows-PC)
+## 1. Einmalig vorbereiten
 
-1. **Node.js** installieren: https://nodejs.org → Version „LTS“ herunterladen und installieren.
-2. Auf dem Handy die kostenlose App **Expo Go** installieren (App Store bzw. Google Play).
-3. PC und Handy müssen im **selben WLAN** sein.
+1. Auf dem **iPhone** die kostenlose App **Expo Go** aus dem App Store installieren.
+2. Auf dem **Windows-PC** **Node.js** installieren: https://nodejs.org → Version „LTS“.
+3. Den Code auf den PC holen: auf GitHub im Repository `DaySell` den richtigen Branch
+   wählen, dann **Code → Download ZIP**, und die ZIP entpacken
+   (zum Beispiel nach `Dokumente\DaySell`).
+4. PC und iPhone müssen im **selben WLAN** sein.
 
-## 2. App starten
+## 2. App auf dem iPhone starten
 
-1. Diesen Ordner entpacken, zum Beispiel nach `Dokumente\ausgaben-code`.
-2. Doppelklick auf **`einrichten.bat`**.
-   Beim ersten Mal dauert das ein paar Minuten. Das Skript legt daneben den Ordner
-   `ausgaben-app` an, kopiert den Code hinein und installiert alles Nötige.
-3. Am Ende erscheint ein **QR-Code**:
-   - **iPhone:** mit der normalen Kamera scannen und „In Expo Go öffnen“ tippen.
-   - **Android:** in Expo Go auf „Scan QR code“ tippen.
+1. Im entpackten Ordner doppelt auf **`einrichten.bat`** klicken.
+   Beim ersten Mal installiert das Skript ein paar Minuten lang die nötigen Pakete.
+2. Am Ende erscheint ein **QR-Code**. Mit der normalen **iPhone-Kamera** scannen und
+   „In Expo Go öffnen“ tippen. Die App lädt und startet in Expo Go.
+3. Beim nächsten Mal reicht wieder ein Doppelklick auf `einrichten.bat`.
+   In Expo Go steht die App dann auch unter „Recently opened“.
 
-Später reicht es, im Ordner `ausgaben-app` eine Eingabeaufforderung zu öffnen und
-`npx expo start` einzugeben.
+Die App läuft in Expo Go, solange das Fenster mit dem QR-Code auf dem PC offen ist.
+Deine Ausgaben speichert sie auf dem iPhone, die gehen beim Beenden nicht verloren.
 
-Wenn Windows fragt, ob Node.js ins Netzwerk darf: **Privates Netzwerk erlauben**,
-sonst findet das Handy den PC nicht. Klappt es trotzdem nicht, starte mit
-`npx expo start --tunnel`.
+**Wenn das iPhone den PC nicht findet:**
+- Wenn Windows fragt, ob Node.js ins Netzwerk darf: **Privates Netzwerk erlauben**.
+- Sonst im Ordner eine Eingabeaufforderung öffnen und `npx expo start --tunnel` eingeben.
+  Das geht auch, wenn PC und iPhone in verschiedenen Netzen sind.
 
 ## 3. Ohne PC nutzen (eigene App aufs Handy)
 
@@ -33,7 +36,7 @@ eigenständige App mit eigenem Symbol:
 
 - **Android (kostenlos):**
   1. Kostenloses Konto auf https://expo.dev anlegen.
-  2. Im Ordner `ausgaben-app`: `npx eas-cli login`, dann
+  2. Im Projektordner: `npx eas-cli login`, dann
      `npx eas-cli build -p android --profile preview`.
   3. Nach etwa 15 Minuten gibt es einen Link zu einer `.apk`-Datei. Auf dem Handy öffnen
      und installieren.
