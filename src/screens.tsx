@@ -6,7 +6,7 @@ import {
   type Entry, type Row, type Settings,
 } from './logic';
 import { useTheme, type as T, type Theme } from './theme';
-import { Bar, Chip, DeleteButton, Glass, GlassButton, PrimaryButton, TintButton, TopBar } from './ui';
+import { Bar, Chip, DeleteButton, GearIcon, Glass, GlassButton, IconButton, PrimaryButton, TintButton, TopBar } from './ui';
 
 const useStyles = () => {
   const t = useTheme();
@@ -130,7 +130,7 @@ export function Overview(p: {
                 <Text style={[T.small, ink, { fontWeight: '500' }]}>Noch {daysLeft} {daysLeft === 1 ? 'Tag' : 'Tage'}</Text>
               </Glass>
             ) : null}
-            <GlassButton label="⚙︎" accessibilityLabel="Budget einrichten" onPress={p.onSetup} textStyle={{ fontSize: 20 }} />
+            <IconButton accessibilityLabel="Budget einrichten" onPress={p.onSetup}><GearIcon color={t.ink} /></IconButton>
           </View>
         </View>
         {p.notice}

@@ -34,7 +34,7 @@ holt sich die neue Version beim nächsten Öffnen mit Internet.
 iPhone. Wenn du das Symbol löschst, sind sie weg. In Safari selbst (ohne Symbol)
 siehst du andere Daten als in der App. Deshalb:
 
-**Sicherung:** Unter ⚙︎ „Budget einrichten“ ganz unten auf **Sicherung speichern**
+**Sicherung:** Über das Zahnrad (Budget einrichten) ganz unten auf **Sicherung speichern**
 tippen und **In Dateien sichern** wählen, am besten in iCloud Drive. Zum
 Wiederherstellen (z. B. auf einem neuen iPhone) dort **Sicherung einlesen** und die
 Datei auswählen. Eingelesene Ausgaben kommen zu den vorhandenen dazu, nichts wird
