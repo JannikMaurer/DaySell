@@ -2,8 +2,14 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, AppState, BackHandler, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { emptySettings, mkey, type Entry, type Settings } from './src/logic';
-import { loadMonth, loadSettings, saveMonth, saveSettings } from './src/storage';
+import {
+  backupFileName, countEntries, emptySettings, fmtDate, makeBackup, mergeEntries, mkey, parseBackup,
+  type Entry, type Settings,
+} from './src/logic';
+import {
+  listMonthKeys, loadLastBackup, loadMonth, loadSettings, saveLastBackup, saveMonth, saveSettings,
+} from './src/storage';
+import { confirm, exportFile, pickFile } from './src/backup';
 import { useTheme } from './src/theme';
 import { Backdrop } from './src/ui';
 import { EntryScreen, ListScreen, Notice, Overview, SavedScreen, SetupScreen } from './src/screens';
@@ -34,6 +40,9 @@ function Main() {
   const [notice, setNotice] = useState<string | null>(null);
   const [, setTick] = useState(0);
   const loading = useRef(new Set<string>());
+  const [lastBackup, setLastBackup] = useState<string | null>(null);
+  const [allKeys, setAllKeys] = useState<string[] | null>(null);
+  const [backupMsg, setBackupMsg] = useState<{ text: string; error?: boolean } | null>(null);
 
   const ensureMonth = useCallback((k: string) => {
     if (monthsRef.current[k] || loading.current.has(k)) return;
@@ -51,6 +60,7 @@ function Main() {
       if (s) setSettings(s);
       else { setSettings(emptySettings()); setFirstRun(true); setView('setup'); }
       ensureMonth(mkey(now.getFullYear(), now.getMonth()));
+      setLastBackup(await loadLastBackup());
     })();
   }, []);
 
@@ -67,7 +77,61 @@ function Main() {
     return () => sub.remove();
   }, []);
 
-  const go = (v: ViewName) => { setUndo(null); setView(v); };
+  const go = (v: ViewName) => { setUndo(null); setBackupMsg(null); setView(v); };
+
+  // Für die Sicherung alle gespeicherten Monate laden, sobald „Budget einrichten“ offen ist.
+  useEffect(() => {
+    if (view !== 'setup') return;
+    listMonthKeys().then((keys) => { setAllKeys(keys); keys.forEach(ensureMonth); });
+  }, [view]);
+  const backupReady = !!allKeys && allKeys.every((key) => months[key]);
+
+  // Ohne Warten aufrufen: Safari öffnet das Teilen-Menü nur direkt nach dem Tippen.
+  const doExport = () => {
+    if (!settings || !backupReady) return;
+    const json = JSON.stringify(makeBackup(settings, months));
+    exportFile(json, backupFileName())
+      .then((ok) => {
+        if (!ok) return;
+        const d = new Date().toISOString();
+        setLastBackup(d);
+        saveLastBackup(d);
+        setBackupMsg({ text: 'Sicherung gespeichert.' });
+      })
+      .catch(() => setBackupMsg({ text: 'Die Sicherung hat nicht geklappt.', error: true }));
+  };
+
+  const doImport = async () => {
+    try {
+      const text = await pickFile();
+      if (text == null) return;
+      const b = parseBackup(text);
+      const n = countEntries(b.months);
+      const ok = await confirm(
+        'Sicherung einlesen?',
+        `Die Sicherung vom ${fmtDate(b.exported)} enthält ${n} ${n === 1 ? 'Ausgabe' : 'Ausgaben'}. ` +
+          'Dein Budget wird durch das aus der Sicherung ersetzt. Die Ausgaben kommen zu deinen dazu, doppelte gibt es danach nicht.',
+        'Einlesen',
+      );
+      if (!ok) return;
+      for (const key of Object.keys(b.months)) {
+        const merged = mergeEntries(await loadMonth(key), b.months[key]);
+        if (!(await saveMonth(key, merged))) throw new Error('Speichern hat nicht geklappt. Ist der Speicher voll?');
+      }
+      if (!(await saveSettings(b.settings))) throw new Error('Speichern hat nicht geklappt. Ist der Speicher voll?');
+      const keys = await listMonthKeys();
+      const all: Record<string, Entry[]> = {};
+      for (const key of keys) all[key] = await loadMonth(key);
+      loading.current.clear();
+      setMonths(all);
+      setAllKeys(keys);
+      setSettings(b.settings);
+      setFirstRun(false);
+      setBackupMsg({ text: `Sicherung eingelesen: ${n} ${n === 1 ? 'Ausgabe' : 'Ausgaben'}.` });
+    } catch (e) {
+      setBackupMsg({ text: e instanceof Error ? e.message : 'Die Sicherung ließ sich nicht einlesen.', error: true });
+    }
+  };
 
   // Android-Zurück-Taste führt zur Übersicht.
   useEffect(() => {
@@ -112,6 +176,7 @@ function Main() {
         firstRun={firstRun}
         onChange={setSettings}
         onDone={() => { setFirstRun(false); saveSettings(settings); go('overview'); }}
+        backup={{ last: lastBackup, ready: backupReady, msg: backupMsg, onExport: doExport, onImport: doImport }}
       />
     );
   } else if (view === 'list') {
@@ -168,6 +233,7 @@ function Main() {
         onList={() => go('list')}
         onNew={() => go('entry')}
         notice={noticeEl}
+        lastBackup={lastBackup}
       />
     );
   }

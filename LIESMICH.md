@@ -28,7 +28,14 @@ holt sich die neue Version beim nächsten Öffnen mit Internet.
 
 **Wichtig zu deinen Daten:** Sie liegen nur in der Home-Bildschirm-App auf dem
 iPhone. Wenn du das Symbol löschst, sind sie weg. In Safari selbst (ohne Symbol)
-siehst du andere Daten als in der App.
+siehst du andere Daten als in der App. Deshalb:
+
+**Sicherung:** Unter ⚙︎ „Budget einrichten“ ganz unten auf **Sicherung speichern**
+tippen und **In Dateien sichern** wählen, am besten in iCloud Drive. Zum
+Wiederherstellen (z. B. auf einem neuen iPhone) dort **Sicherung einlesen** und die
+Datei auswählen. Eingelesene Ausgaben kommen zu den vorhandenen dazu, nichts wird
+doppelt. Das Budget wird durch das aus der Sicherung ersetzt. Ist die letzte
+Sicherung länger als 30 Tage her, erinnert dich die Übersicht daran.
 
 ## Mit Expo Go testen (braucht den PC)
 
@@ -83,6 +90,7 @@ eigenständige App mit eigenem Symbol:
 | `src/ui.tsx` | Glasflächen, Buttons, Umschlag-Auswahl |
 | `src/theme.ts` | Farben für hell und dunkel |
 | `src/storage.ts` | Speichern auf dem Gerät |
+| `src/backup.ts`, `src/backup.web.ts` | Sicherung als Datei speichern und einlesen (App bzw. Browser) |
 | `public/` | Web-App: Symbol, Manifest, Offline-Speicher (`sw.js`) |
 | `netlify.toml` | Einstellungen für die Veröffentlichung auf Netlify |
 

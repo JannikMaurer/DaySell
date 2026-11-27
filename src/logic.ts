@@ -130,3 +130,65 @@ export function pushDigits(current: string, d: string): { cents: string; tooBig:
   if (parseInt(c || '0', 10) <= MAX_CENTS) return { cents: c, tooBig: false };
   return { cents: current, tooBig: true };
 }
+
+/* ---------------- Sicherung ---------------- */
+
+export type Backup = { app: 'ausgaben'; version: 1; exported: string; settings: Settings; months: Record<string, Entry[]> };
+
+export function makeBackup(settings: Settings, months: Record<string, Entry[]>, now = new Date()): Backup {
+  const m: Record<string, Entry[]> = {};
+  for (const k of Object.keys(months).sort()) if (months[k].length) m[k] = months[k];
+  return { app: 'ausgaben', version: 1, exported: now.toISOString(), settings, months: m };
+}
+
+export const backupFileName = (now = new Date()) => `ausgaben-sicherung-${iso(now)}.json`;
+
+const isStr = (v: unknown): v is string => typeof v === 'string';
+
+/** Liest eine Sicherungsdatei. Wirft einen Fehler mit verständlichem Text, wenn sie nicht passt. */
+export function parseBackup(text: string): Backup {
+  let v: any;
+  try { v = JSON.parse(text); } catch { throw new Error('Die Datei ist keine Sicherung dieser App.'); }
+  if (!v || v.app !== 'ausgaben' || !v.settings || typeof v.months !== 'object' || !v.months) {
+    throw new Error('Die Datei ist keine Sicherung dieser App.');
+  }
+  if (v.version !== 1) throw new Error('Diese Sicherung stammt aus einer neueren Version der App.');
+  const rows = (l: unknown): Row[] => {
+    if (!Array.isArray(l)) throw new Error('Die Sicherung ist beschädigt.');
+    return l.filter((r) => r && isStr(r.id) && isStr(r.name) && isStr(r.amount)).map((r) => ({ id: r.id, name: r.name, amount: r.amount }));
+  };
+  const settings: Settings = { income: rows(v.settings.income), fixed: rows(v.settings.fixed), env: rows(v.settings.env) };
+  const months: Record<string, Entry[]> = {};
+  for (const k of Object.keys(v.months)) {
+    if (!/^\d{4}-\d{2}$/.test(k) || !Array.isArray(v.months[k])) continue;
+    const list = (v.months[k] as any[]).filter((e) =>
+      e && isStr(e.id) && Number.isInteger(e.amount) && e.amount > 0 && e.amount <= MAX_CENTS &&
+      isStr(e.what) && isStr(e.env) && isStr(e.t) && isStr(e.date) && /^\d{4}-\d{2}-\d{2}$/.test(e.date) && e.date.slice(0, 7) === k,
+    ).map((e) => ({ id: e.id, amount: e.amount, what: e.what, env: e.env, date: e.date, t: e.t }));
+    if (list.length) months[k] = list;
+  }
+  return { app: 'ausgaben', version: 1, exported: isStr(v.exported) ? v.exported : '', settings, months };
+}
+
+/** Führt Ausgaben zusammen. Gleiche Einträge (gleiche id) gibt es danach nur einmal. */
+export function mergeEntries(current: Entry[], incoming: Entry[]): Entry[] {
+  const byId = new Map(current.map((e) => [e.id, e]));
+  for (const e of incoming) byId.set(e.id, e);
+  return [...byId.values()];
+}
+
+export const countEntries = (months: Record<string, Entry[]>) =>
+  Object.values(months).reduce((a, l) => a + l.length, 0);
+
+/** „27. November 2026“ aus einem ISO-Zeitpunkt. */
+export function fmtDate(isoTime: string): string {
+  const d = new Date(isoTime);
+  return isNaN(d.getTime()) ? 'unbekannt' : `${d.getDate()}. ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+/** Ob an eine Sicherung erinnert werden soll: noch nie gesichert oder länger als 30 Tage her. */
+export function backupDue(last: string | null, now = new Date()): boolean {
+  if (!last) return true;
+  const t = new Date(last).getTime();
+  return isNaN(t) || now.getTime() - t > 30 * 864e5;
+}

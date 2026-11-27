@@ -40,3 +40,27 @@ export async function saveMonth(key: string, entries: Entry[]): Promise<boolean>
     return false;
   }
 }
+
+/** Schlüssel aller gespeicherten Monate, z. B. „2026-11“. */
+export async function listMonthKeys(): Promise<string[]> {
+  try {
+    const keys = await AsyncStorage.getAllKeys();
+    return keys.filter((k) => k.startsWith(PREFIX + 'm-')).map((k) => k.slice(PREFIX.length + 2)).sort();
+  } catch {
+    return [];
+  }
+}
+
+export async function loadLastBackup(): Promise<string | null> {
+  try {
+    return await AsyncStorage.getItem(PREFIX + 'lastBackup');
+  } catch {
+    return null;
+  }
+}
+
+export async function saveLastBackup(isoDate: string): Promise<void> {
+  try {
+    await AsyncStorage.setItem(PREFIX + 'lastBackup', isoDate);
+  } catch {}
+}

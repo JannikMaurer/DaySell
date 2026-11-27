@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  MONTHS, calc, dayLabel, envName, euro, iso, longDay, parseIso, pushDigits, sorted, totals, uid,
+  MONTHS, backupDue, calc, fmtDate, dayLabel, envName, euro, iso, longDay, parseIso, pushDigits, sorted, totals, uid,
   type Entry, type Row, type Settings,
 } from './logic';
 import { useTheme, type as T, type Theme } from './theme';
@@ -40,6 +40,7 @@ export function Overview(p: {
   settings: Settings; list: Entry[]; vy: number; vm: number;
   onPrev: () => void; onNext: () => void; canNext: boolean;
   onSetup: () => void; onList: () => void; onNew: () => void; notice?: React.ReactNode;
+  lastBackup: string | null;
 }) {
   const { t, ink, muted, red } = useStyles();
   const insets = useSafeAreaInsets();
@@ -150,7 +151,16 @@ export function Overview(p: {
             recent.map((e) => <ItemRow key={e.id} e={e} settings={p.settings} />)
           )}
         </Glass>
-        <Text style={[T.small, muted, { margin: 12 }]}>Auf diesem Gerät gespeichert.</Text>
+        {p.list.length && backupDue(p.lastBackup) ? (
+          <View style={[s.wrapRow, { margin: 12, alignItems: 'center', rowGap: 8 }]}>
+            <Text style={[T.small, muted, { flexShrink: 1 }]}>
+              Nur auf diesem Gerät gespeichert. Letzte Sicherung: {p.lastBackup ? fmtDate(p.lastBackup) : 'noch nie'}.
+            </Text>
+            <TintButton label="Jetzt sichern" onPress={p.onSetup} />
+          </View>
+        ) : (
+          <Text style={[T.small, muted, { margin: 12 }]}>Auf diesem Gerät gespeichert.</Text>
+        )}
       </Screen>
       <View style={{ position: 'absolute', left: 14, right: 14, bottom: insets.bottom + 14, alignItems: 'center' }}>
         <PrimaryButton label="Ausgabe erfassen" icon="+" onPress={p.onNew} style={{ width: '100%', maxWidth: 532 }} />
@@ -361,7 +371,14 @@ export function SavedScreen(p: { settings: Settings; entry: Entry; list: Entry[]
 }
 
 /* ---------------- Budget einrichten ---------------- */
-export function SetupScreen(p: { settings: Settings; firstRun: boolean; onChange: (s: Settings) => void; onDone: () => void }) {
+export type BackupProps = {
+  last: string | null; ready: boolean; msg: { text: string; error?: boolean } | null;
+  onExport: () => void; onImport: () => void;
+};
+
+export function SetupScreen(p: {
+  settings: Settings; firstRun: boolean; onChange: (s: Settings) => void; onDone: () => void; backup: BackupProps;
+}) {
   const { t, ink, muted, red } = useStyles();
   const tt = totals(p.settings);
   const narrow = useWindowDimensions().width < 380;
@@ -425,6 +442,26 @@ export function SetupScreen(p: { settings: Settings; firstRun: boolean; onChange
         {section('Einkommen', 'income', 'z. B. Gehalt', 'Einnahme hinzufügen', '', tt.inc)}
         {section('Fixkosten', 'fixed', 'z. B. Miete', 'Fixkosten hinzufügen', 'Gehen jeden Monat automatisch ab.', tt.fix)}
         {section('Umschläge', 'env', 'z. B. Kleidung', 'Umschlag hinzufügen', 'So viel willst du pro Monat in jedem Bereich ausgeben.', tt.env)}
+        <Glass style={{ marginTop: 12, padding: 16 }}>
+          <Text style={[T.h2, ink, { marginHorizontal: 4 }]}>Sicherung</Text>
+          <Text style={[T.small, muted, { marginHorizontal: 4, marginTop: 4, fontSize: 14 }]}>
+            {p.firstRun
+              ? 'Hast du schon eine Sicherung? Dann lies sie hier ein, statt alles neu einzutragen.'
+              : 'Deine Daten liegen nur auf diesem Gerät. Speichere ab und zu eine Sicherung, am besten über „In Dateien sichern“ in iCloud Drive.'}
+          </Text>
+          <Text style={[T.small, ink, { marginHorizontal: 4, marginTop: 8, fontWeight: '600', fontSize: 14 }]}>
+            Letzte Sicherung: {p.backup.last ? fmtDate(p.backup.last) : 'noch nie'}
+          </Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
+            <TintButton label={p.backup.ready ? 'Sicherung speichern' : 'Lade …'} onPress={p.backup.onExport} />
+            <TintButton label="Sicherung einlesen" onPress={p.backup.onImport} />
+          </View>
+          {p.backup.msg ? (
+            <Text accessibilityLiveRegion="polite" style={[T.small, { marginHorizontal: 4, marginTop: 10, fontWeight: '600', fontSize: 14 }, p.backup.msg.error ? red : ink]}>
+              {p.backup.msg.text}
+            </Text>
+          ) : null}
+        </Glass>
         <Text style={[T.small, muted, { margin: 12 }]}>Deine Angaben bleiben auf diesem Gerät.</Text>
       </Screen>
     </KeyboardAvoidingView>
