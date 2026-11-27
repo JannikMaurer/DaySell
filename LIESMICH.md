@@ -3,7 +3,36 @@
 Eine echte App (React Native mit Expo): Tagesbudget, Umschläge, Ausgaben erfassen,
 frühere Monate ansehen. Alle Daten bleiben auf deinem Handy.
 
-## 1. Einmalig vorbereiten
+## Als App auf dem iPhone-Home-Bildschirm (kostenlos, empfohlen)
+
+Die App läuft als Web-App in Safari: eigenes Symbol, Vollbild, funktioniert auch
+ohne Internet. Kein PC und kein Apple-Entwicklerkonto nötig.
+
+**Einmalig veröffentlichen (am PC oder Handy, ca. 5 Minuten):**
+1. Auf https://app.netlify.com kostenlos registrieren, am einfachsten mit „Sign up with GitHub“.
+2. **Add new project → Import an existing project → GitHub** wählen und Netlify den
+   Zugriff auf das Repository `DaySell` erlauben.
+3. `DaySell` auswählen. Die Einstellungen kommen automatisch aus `netlify.toml`,
+   einfach auf **Deploy** tippen.
+4. Nach 1–2 Minuten steht oben eine Adresse wie `https://irgendwas.netlify.app`.
+   Unter **Project configuration → Change project name** kannst du einen schöneren
+   Namen wählen, z. B. `meine-ausgaben`.
+
+**Auf dem iPhone:**
+1. Die Adresse in **Safari** öffnen (nicht in Chrome).
+2. Unten auf **Teilen** (Quadrat mit Pfeil) → **Zum Home-Bildschirm** → **Hinzufügen**.
+3. Ab jetzt die App immer über das Symbol öffnen.
+
+Jede Änderung am Code auf GitHub veröffentlicht Netlify automatisch neu. Die App
+holt sich die neue Version beim nächsten Öffnen mit Internet.
+
+**Wichtig zu deinen Daten:** Sie liegen nur in der Home-Bildschirm-App auf dem
+iPhone. Wenn du das Symbol löschst, sind sie weg. In Safari selbst (ohne Symbol)
+siehst du andere Daten als in der App.
+
+## Mit Expo Go testen (braucht den PC)
+
+### 1. Einmalig vorbereiten
 
 1. Auf dem **iPhone** die kostenlose App **Expo Go** aus dem App Store installieren.
 2. Auf dem **Windows-PC** **Node.js** installieren: https://nodejs.org → Version „LTS“.
@@ -12,7 +41,7 @@ frühere Monate ansehen. Alle Daten bleiben auf deinem Handy.
    (zum Beispiel nach `Dokumente\DaySell`).
 4. PC und iPhone müssen im **selben WLAN** sein.
 
-## 2. App auf dem iPhone starten
+### 2. App auf dem iPhone starten
 
 1. Im entpackten Ordner doppelt auf **`einrichten.bat`** klicken.
    Beim ersten Mal installiert das Skript ein paar Minuten lang die nötigen Pakete.
@@ -29,7 +58,7 @@ Deine Ausgaben speichert sie auf dem iPhone, die gehen beim Beenden nicht verlor
 - Sonst im Ordner eine Eingabeaufforderung öffnen und `npx expo start --tunnel` eingeben.
   Das geht auch, wenn PC und iPhone in verschiedenen Netzen sind.
 
-## 3. Ohne PC nutzen (eigene App aufs Handy)
+## Als eigenständige native App (App Store / TestFlight)
 
 Mit Expo Go läuft die App nur, solange der PC sie bereitstellt. Für eine
 eigenständige App mit eigenem Symbol:
@@ -54,6 +83,8 @@ eigenständige App mit eigenem Symbol:
 | `src/ui.tsx` | Glasflächen, Buttons, Umschlag-Auswahl |
 | `src/theme.ts` | Farben für hell und dunkel |
 | `src/storage.ts` | Speichern auf dem Gerät |
+| `public/` | Web-App: Symbol, Manifest, Offline-Speicher (`sw.js`) |
+| `netlify.toml` | Einstellungen für die Veröffentlichung auf Netlify |
 
 Hell und dunkel folgen automatisch der Einstellung des Handys.
 Auf dem iPhone sind die Flächen weichgezeichnetes Glas, auf Android etwas dichter

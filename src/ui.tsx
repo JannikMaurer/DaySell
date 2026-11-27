@@ -3,17 +3,20 @@ import { Platform, Pressable, StyleSheet, Text, View, type StyleProp, type ViewS
 import { BlurView } from 'expo-blur';
 import { useTheme, type as T } from './theme';
 
+// Weichzeichner auf dem iPhone und im Browser (Safari kann das), Android ohne.
+const BLUR = Platform.OS === 'ios' || Platform.OS === 'web';
+
 /** Glasfläche: weichgezeichneter Hintergrund, helle Kante. Auf Android ohne Weichzeichner, dafür etwas dichter. */
 export function Glass({ style, radius = 28, children }: { style?: StyleProp<ViewStyle>; radius?: number; children?: React.ReactNode }) {
   const t = useTheme();
   return (
     <View style={[{ borderRadius: radius, overflow: 'hidden', borderWidth: StyleSheet.hairlineWidth * 2, borderColor: t.edge }, style]}>
-      {Platform.OS === 'ios' ? (
+      {BLUR ? (
         <BlurView intensity={t.dark ? 40 : 55} tint={t.dark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
       ) : null}
       <View
         pointerEvents="none"
-        style={[StyleSheet.absoluteFill, { backgroundColor: Platform.OS === 'ios' ? t.glass : t.dark ? 'rgba(40,48,96,0.72)' : 'rgba(255,255,255,0.72)' }]}
+        style={[StyleSheet.absoluteFill, { backgroundColor: BLUR ? t.glass : t.dark ? 'rgba(40,48,96,0.72)' : 'rgba(255,255,255,0.72)' }]}
       />
       {children}
     </View>
@@ -28,7 +31,7 @@ export function Backdrop() {
       <View style={[styles.blob, { width: 360, height: 360, left: -140, top: -80, backgroundColor: t.blobs[0] }]} />
       <View style={[styles.blob, { width: 300, height: 300, right: -120, top: 260, backgroundColor: t.blobs[1] }]} />
       <View style={[styles.blob, { width: 340, height: 340, left: -60, bottom: -40, backgroundColor: t.blobs[2] }]} />
-      {Platform.OS === 'ios' ? <BlurView intensity={80} tint={t.dark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} /> : null}
+      {BLUR ? <BlurView intensity={80} tint={t.dark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} /> : null}
     </View>
   );
 }
@@ -163,7 +166,7 @@ export function Bar({ pct, over }: { pct: number; over?: boolean }) {
 }
 
 const styles = StyleSheet.create({
-  blob: { position: 'absolute', borderRadius: 999, opacity: Platform.OS === 'ios' ? 0.65 : 0.28 },
+  blob: { position: 'absolute', borderRadius: 999, opacity: BLUR ? 0.65 : 0.28 },
   btn: { alignItems: 'center', justifyContent: 'center', flexDirection: 'row' },
   x: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   xc: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },

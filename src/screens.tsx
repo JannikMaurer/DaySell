@@ -384,7 +384,7 @@ export function SetupScreen(p: { settings: Settings; firstRun: boolean; onChange
             placeholder={ph}
             placeholderTextColor={t.faint}
             accessibilityLabel="Bezeichnung"
-            style={[s.field, narrow ? { width: '100%' } : { flex: 1 }, { backgroundColor: t.field, borderColor: t.edge, color: t.ink }]}
+            style={[s.field, narrow ? { width: '100%' } : { flex: 1, minWidth: 0 }, { backgroundColor: t.field, borderColor: t.edge, color: t.ink }]}
           />
           <TextInput
             value={r.amount}
@@ -393,7 +393,7 @@ export function SetupScreen(p: { settings: Settings; firstRun: boolean; onChange
             placeholderTextColor={t.faint}
             keyboardType="decimal-pad"
             accessibilityLabel={`Betrag für ${r.name || ph}`}
-            style={[s.field, T.num, narrow ? { flex: 1 } : { width: 118, textAlign: 'right' }, { backgroundColor: t.field, borderColor: t.edge, color: t.ink }]}
+            style={[s.field, T.num, narrow ? { flex: 1, minWidth: 0 } : { width: 118, textAlign: 'right' }, { backgroundColor: t.field, borderColor: t.edge, color: t.ink }]}
           />
           <DeleteButton label={`${r.name || 'Zeile'} entfernen`} onPress={() => set(list, p.settings[list].filter((x) => x.id !== r.id))} />
         </View>

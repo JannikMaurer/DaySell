@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Ausgaben</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Ausgaben" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#E3E7EF" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0E1224" media="(prefers-color-scheme: dark)" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <style id="expo-reset">
+      html, body { height: 100%; }
+      body { overflow: hidden; margin: 0; background: #E3E7EF; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+      @media (prefers-color-scheme: dark) { body { background: #0E1224; } }
+      #root { display: flex; height: 100%; flex: 1; }
+      input { font-size: 16px; } /* verhindert das Hineinzoomen von Safari */
+    </style>
+  </head>
+  <body>
+    <noscript>Bitte JavaScript einschalten.</noscript>
+    <div id="root"></div>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () { navigator.serviceWorker.register('/sw.js'); });
+      }
+    </script>
+  </body>
+</html>
