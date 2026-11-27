@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "Ausgaben",
+    "slug": "ausgaben",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "de.ausgaben.app"
+    },
+    "android": {
+      "package": "de.ausgaben.app",
+      "softwareKeyboardLayoutMode": "resize"
+    }
+  }
+}
